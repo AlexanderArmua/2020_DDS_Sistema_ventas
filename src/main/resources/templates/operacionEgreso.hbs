@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="es" dir="ltr">
+<head>
+    {{ head "Operación" }}
+</head>
+<body>
+{{ navbar null usuario }}
+
+<style>
+        .datosTarj{
+                display: none;
+                margin-top: 10px;
+        }
+</style>
+
+<div class="container-fluid">
+    <h1 class="display-3">{{#if operacion.id}}Editar Operación{{else}}Crear Operación{{/if}}</h1>
+    <div class="row-fluid" id="body">
+        <form id="formEgreso" method="post" action="{{#if operacion.id}}{{operacion_view_egreso}}/{{operacion.id}}{{else}}{{operacion_egreso_crear}}{{/if}}">
+
+
+            <div class="row">
+                 <div class="col">
+                        <div class="form-group">
+                            <label for="inputDescEgreso">Descripcion</label>
+                            <input type="text" class="form-control campoEditable" maxlength="70" id="inputDescEgreso"
+                                   aria-describedby="descripcionHelp" name="{{query_param_descEgreso}}" {{#if operacion.id}}
+                                   value="{{operacion.descripcion}}" {{/if}} required/>
+                        </div>
+                 </div>
+
+                 <div class="col">
+                        <div class="form-group">
+                            <label for="inputFecha">Fecha</label>
+                            <input type="datetime-local" step="1" class="form-control campoEditable" id="inputFecha"
+                                   aria-describedby="fechaHelp" name="{{query_param_fecha}}" {{#if operacion.id}}
+                                   value="{{operacion.fecha}}" {{else}} value="{{operacion.fecha}}"  {{/if}} required/>
+                        </div>
+                  </div>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                        <div class="form-group">
+                            <label for="proveedor">Proveedor:</label>
+                            <select class="form-control campoEditable" id="proveedor" name="{{query_param_proveedor}}" required>
+                                <option value="">Seleccione proveedor</option>
+                                {{#each proveedores}}
+                                    <option value="{{id}}">{{#if
+                                            nombre }} {{nombre}} {{apellido}} {{else}} {{razonSocial}}  {{/if}}</option>
+                                {{/each}}
+                            </select>
+                        </div>
+                </div>
+
+                <div class="col">
+                        <div class="form-group">
+                            <label for="moneda">Moneda:</label>
+                            <select class="form-control campoEditable" id="moneda" name="{{query_param_moneda}}" disabled>
+                                {{#each moneda}}
+                                    <option value="{{id}}">{{descripcion}}</option>
+                                {{/each}}
+                            </select>
+                        </div>
+                </div>
+
+            </div>
+
+
+
+
+            <div class="row">
+
+                <div class="col">
+                        <label>¿Necesita presupuestos?</label>
+                        <label class="radio-inline">
+                            <input type="radio" class="campoEditable" name="{{query_param_presupuestosOption}}"
+                                   onchange="mostrarCantPresupuestos(true)" {{#if operacion.id }} {{#if
+                                    operacion.necesitaPresupuesto }} checked {{/if}} {{/if}}>Si
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" class="campoEditable" name="{{query_param_presupuestosOption}}"
+                                   onchange="mostrarCantPresupuestos(false)" {{#if operacion.id }} {{#if
+                                    operacion.necesitaPresupuesto }} {{else}} checked  {{/if}} {{else}} checked {{/if}}>No
+                        </label>
+                </div>
+
+                <div class="col">
+                        <div id="presupuestos">
+                            <label class="radio-inline" for="cantidadPresup">Cantidad de Presupuestos</label>
+                            <input type="number" class="campoEditable" id="cantidadPresup" max="30" min="1"
+                                   name="{{query_param_cantidadPresupuestos}}"
+                                   value="{{operacion.cantidadPresupuestoRequeridos}}" {{#if operacion.id }} {{#if
+                                    operacion.necesitaPresupuesto }} {{else}} disabled {{/if}} {{else}} disabled {{/if}}>
+                        </div>
+                </div>
+
+            </div>
+
+            <div class="row">
+
+                {{#if presupuestoSeleccionado.id}}
+
+                    <div class="col">
+                        <label for="proveedorSeleccionado" class="col-sm-2 col-form-label">Proveedor: </label>
+                    </div>
+                    <div class="col">
+                        <input type="text" readonly class="form-control-plaintext" id="staticProveedorSeleccionado" value="{{presupuestoSeleccionado.proveedor.razonSocial}}">
+                    </div>
+
+                    <div class="col">
+                        <label for="presupuestoSeleccionado" class="col-sm-2 col-form-label">Presupuesto: </label>
+                    </div>
+                    <div class="col">
+                        <input type="text" readonly class="form-control-plaintext" id="staticPresupuestoSeleccionado" value="{{presupuestoSeleccionado.descripcion}}">
+                    </div>
+
+                    <div class="col">
+                        <label for="valorSeleccionado" class="col-sm-2 col-form-label">Valor: </label>
+                    </div>
+                    <div class="col">
+                        <input type="text" readonly class="form-control-plaintext" id="staticValorSeleccionado" value="${{presupuestoSeleccionado.valorTotal}}">
+                    </div>
+                {{/if}}
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <div class="form-group">
+                        <label for="medioDePago">Medio de pago:</label>
+                        <select class="form-control campoEditable" id="medioDePago" name="{{query_param_medioPago}}"
+                                onchange="changeMedioPago()" required>
+                            <option value="">Seleccione medio de pago</option>
+                            <option name="medioPagoOption" value="{{valorEfectivo}}">Efectivo</option>
+                            <option name="medioPagoOption" value="{{valorTarjetaCredito}}">Tarjeta de Crédito</option>
+                            <option name="medioPagoOption" value="{{valorTarjetaDebito}}">Tarjeta de Débito</option>
+                            <option name="medioPagoOption" value="{{valorCheque}}">Cheque</option>
+                        </select>
+                        <div id="medioPagoCamposBasicos" class="datosTarj">
+                            <label for="responsableId">Nombre y Apellido del Titular</label>
+                            <input type="text" class="campoEditable" id="responsableId" maxlength="70"
+                                   name="{{query_param_nombre_responsable}}" value="{{operacion.medioDePago.nombreApellido}}">
+                            <label for="numeroComprobante">Número</label>
+                            <input type="number" class="campoEditable" id="numeroComprobante" max="99999999999999999"
+                                   name="{{query_param_numero_comprobante}}" value="{{operacion.medioDePago.numero}}">
+                            <label for="fechaVencimiento">Fecha de vencimiento</label>
+                            <input type="text" class="campoEditable" id="fechaVencimiento" placeholder="MMAA" maxlength="5"
+                                   name="{{query_param_fecha_vencimiento}}" value="{{operacion.medioDePago.vencimiento}}">
+
+                            <div id="medioPagoTarjeta" class="datosTarj">
+                                <label for="codigoSeguridad">Código de seguridad</label>
+                                <input type="number" class="campoEditable" id="codigoSeguridad" max="999" min="001"
+                                       name="{{query_param_codigo_seguridad}}" value="{{operacion.medioDePago.numeroSeguridad}}">
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="row">
+                    {{#if presupuestoSeleccionado.id}}
+                            <!--label for="proveedorSeleccionado" class="col-sm-2 col-form-label">Proveedor: </label-->
+                            <div class="col">
+                                {{#if operacion.id}}
+                                <div class="form-group">
+                                    <label for="presupuestos">Presupuestos asociados:</label>
+                                    <select class="form-control" id="presupuestoSelect" name="{{query_param_presupuesto}}">
+                                        <option value="0">Seleccione presupuesto</option>
+                                        {{#each presupuestos}}
+                                        <option value="{{id}}">{{proveedor.razonSocial}} - ${{valorTotal}}</option>
+                                        {{/each}}
+                                    </select>
+                                </div>
+                                {{/if}}
+                            </div>
+                    {{/if}}
+            </div>
+
+            <div class="row">
+                <div class="col">
+                                <div class="form-group">
+                                    <label for="criteriosSeleccion">Criterio de Selección:</label>
+                                    <select class="form-control" id="criteriosSeleccion" name="{{query_param_criterio_seleccion}}">
+                                        <option value="0">Seleccione un criterio</option>
+                                        {{#each listaCriteriosSeleccion}}
+                                        <option value="{{description}}">{{description}}</option>
+                                        {{/each}}
+                                    </select>
+                                </div>
+                </div>
+
+
+                <div class="col">
+                        <div class="form-group">
+                            <label for="categorias">Categorías:</label> <br>
+                            <select multiple class="form-control campoEditable" id="selectCategorias"
+                                    name="{{query_param_categoria}}" required>
+                                {{#each categoriaSeleccionada}}
+                                    <option name="categoriaOption" value="{{categoria.id}}"
+                                            {{#if seleccionada}}selected{{/if}}>{{categoria.descripcion}}</option>
+                                {{/each}}
+                            </select>
+                        </div>
+                </div>
+
+                <div class="col">
+                        <div class="form-group">
+                            <label for="revisores">Revisores:</label> <br>
+                            <select multiple class="form-control campoEditable" id="selectRevisores" name="{{query_param_revisor}}"
+                                    required>
+                                {{#each revisorSeleccionado}}
+                                    <option name="revisorOption" value="{{revisor.id}}"
+                                            {{#if revisorElegido}}selected{{/if}}>{{revisor.usuario}}</option>
+                                {{/each}}
+                            </select>
+                        </div>
+                </div>
+            </div>
+
+
+            <div class="row">
+                <div class="col">
+
+                        <div class="form-group">
+                            <label>Items</label>
+                            <table id="itemsTable">
+                                <tr>
+                                    <th>Descripción</th>
+                                    <th>Detalle</th>
+                                    <th>Cantidad</th>
+                                    <th>Tipo</th>
+                                    <th>Precio</th>
+                                    <th>
+                                        <button type="button" class="btn btn-primary campoEditable" onclick="addRow()">+</button>
+                                    </th>
+                                    <th></th>
+                                </tr>
+                                {{#each operacion.items}}
+                                    <tr id="row-{{@index}}">
+                                        <td>
+                                            <input class="form-control campoEditable" type="text" maxlength="40"
+                                                   value="{{descripcion}}" required>
+                                        </td>
+                                        <td>
+                                            <input class="form-control campoEditable" type="text" maxlength="60"
+                                                   value="{{detalle}}">
+                                        </td>
+                                        <td>
+                                            <input class="form-control campoEditable" type="number" min="1" max="1000"
+                                                   onchange="cambiaValor()" value="{{cantidad}}" required>
+                                        </td>
+                                        <td>
+                                            <select class="form-control campoEditable" id="tipoDeItem" value="{{tipoItem}}">
+                                                <option name="tipoDeItemOption" value="producto" {{#compararIgual 'producto'
+                                                                                                                  tipoItem}}
+                                                        selected {{/compararIgual}} >Producto
+                                                </option>
+                                                <option name="tipoDeItemOption" value="servicio" {{#compararIgual 'servicio'
+                                                                                                                  tipoItem}}
+                                                        selected {{/compararIgual}}>Servicio
+                                                </option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <input class="form-control campoEditable" type="number" step=0.01 max="999999"
+                                                   min="0.01" onchange="cambiaValor()" value="{{precio}}" required>
+                                        </td>
+                                        <td>
+                                            <button type="button" class="btn btn-danger campoEditable"
+                                                    onclick="removeRow({{@index}})">-
+                                            </button>
+                                        </td>
+                                        <td style="display: none">
+                                            <input type="hidden" value="{{id}}">
+                                        </td>
+                                    </tr>
+                                {{/each}}
+                            </table>
+                        </div>
+
+
+                        <div class="form-group">
+                            <label for="inputValorTotal">Valor total</label>
+                            <input type="number" disabled step=0.01 class="form-control" id="inputValorTotal"
+                                   aria-describedby="valorTotalHelp"/>
+                        </div>
+                </div>
+            </div>
+
+
+            <div class="row">
+                <div class="col">
+                    <div class="form-group">
+                        <label for="operacionGroup">Documento Comercial:</label>
+                        <div class="btn-group" role="group" id="operacionGroup">
+                            <button type="button" class="btn btn-secondary"
+                                    onclick="changeDocumentoGroup('divEnlace', 'divArchivo')">Enlace
+                            </button>
+                            <button type="button" class="btn btn-secondary"
+                                    onclick="changeDocumentoGroup('divArchivo', 'divEnlace')">Archivo
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="col">
+                    <label for="numeroDocumentoComercialId">Número de Documento Comercial:</label>
+                    <input type="number" id="numeroDocumentoComercialId" min="1" max="99999999999"
+                           name="{{query_param_numero_documento}}" value="{{operacion.documentoComercial.numero}}">
+                </div>
+            </div>
+
+
+            <div class="row" style="margin-top: 10px">
+                <div class="col">
+
+                        <div id="divEnlace">
+                            <label for="enlaceDocumentoId">Enlace Documento Comercial:</label>
+                            <input type="text" id="enlaceDocumentoId" maxlength="30" name="{{query_param_enlace_documento}}"
+                                value="{{operacion.documentoComercial.enlaceExterno}}">
+                        </div>
+                </div>
+
+                <div class="col">
+                        <div id="divArchivo">
+                            <input id="documentoComercial" type="file" name="{{query_param_documento_comercial}}"
+                                   onchange="updateImage()">
+                            {{#if imagen}}
+                                <div id="showImage">
+                                    <img src="{{imagen}}" width="300" height="500">
+                                    <a onclick="downloadImage()">Descargar</a>
+                                </div>
+                            {{/if}}
+                            {{#if pdf}}
+                            <div id="pdfFile"></div>
+                             {{/if}}
+                        </div>
+                </div>
+            </div>
+
+
+            <button type="submit" class="btn btn-primary">{{#if operacion.id}}
+                Actualizar Operación{{else}}Guardar Operación{{/if}}</button>
+        </form>
+    </div>
+</div>
+
+{{ footer null }}
+
+</body>
+
+{{ generalLibs null }}
+
+<script type="text/javascript">
+    let cantidadFilasItems = 0;
+
+    window.addEventListener("load", function () {
+        const op = {{operacion.id}} ? {{operacion.id}} : null;
+
+        if (op == null) {
+            let now = new Date();
+            let utcString = now.toISOString().substring(0, 19);
+            let year = now.getFullYear();
+            let month = now.getMonth() + 1;
+            let day = now.getDate();
+            let hour = now.getHours();
+            let minute = now.getMinutes();
+            let localDatetime = year + "-" +
+                    (month < 10 ? "0" + month.toString() : month) + "-" +
+                    (day < 10 ? "0" + day.toString() : day) + "T" +
+                    (hour < 10 ? "0" + hour.toString() : hour) + ":" +
+                    (minute < 10 ? "0" + minute.toString() : minute) +
+                    utcString.substring(16, 19);
+            let datetimeField = document.getElementById("inputFecha");
+            datetimeField.value = localDatetime;
+        }
+
+        if ("{{medioPagoSeleccionado}}" !== 'null') {
+            let options = document.getElementsByName("medioPagoOption");
+            for (let i = 0; i < options.length; i++) {
+                if (options[i].value === "{{medioPagoSeleccionado}}") {
+                    options[i].selected = true;
+                    changeMedioPago();
+                    break;
+                }
+            }
+        }
+
+        cambiaValor();
+        cantidadFilasItems = CountRows();
+        noPermitirEditar();
+
+        if ('{{tipoArchivo}}' === 'archivo_adjunto') {
+            changeDocumentoGroup('divArchivo', 'divEnlace');
+        } else {
+            changeDocumentoGroup('divEnlace', 'divArchivo');
+        }
+
+        if('{{pdf}}' != '') {
+            cargarPDF();
+        }
+    });
+
+    function mostrarCantPresupuestos(mostrar) {
+        const input = document.getElementById("cantidadPresup");
+
+        input.disabled = !mostrar;
+    }
+
+    function changeMedioPago() {
+        const selectMedioPago = document.getElementById("medioDePago");
+        const medioPagoBasico = document.getElementById("medioPagoCamposBasicos");
+        const medioPagoTarjeta = document.getElementById("medioPagoTarjeta");
+
+        switch (selectMedioPago.value) {
+            case "tarjetaCredito":
+            case "tarjetaDebito": {
+                medioPagoBasico.style.display = "block";
+                medioPagoTarjeta.style.display = "block";
+                break;
+            }
+            case "cheque": {
+                medioPagoBasico.style.display = "block";
+                medioPagoTarjeta.style.display = "none";
+                break;
+            }
+            default: {
+                medioPagoTarjeta.style.display = "none";
+                medioPagoBasico.style.display = "none";
+                break;
+            }
+        }
+    }
+
+    function addRow() {
+        let table = document.getElementById("itemsTable");
+        let row = table.insertRow(-1);
+        const numeroRow = cantidadFilasItems;
+        row.id = "row-" + numeroRow;
+        let descripcion = row.insertCell(0);
+        let detalle = row.insertCell(1);
+        let cantidad = row.insertCell(2);
+        let tipo = row.insertCell(3);
+        let precio = row.insertCell(4);
+        let agregar = row.insertCell(5);
+        let id = row.insertCell(6);
+
+        let inputDesc = document.createElement("input");
+        inputDesc.type = "text";
+        inputDesc.className = "form-control campoEditable";
+        inputDesc.maxLength = "40";
+
+        let inputDet = document.createElement("input");
+        inputDet.type = "text";
+        inputDet.className = "form-control campoEditable";
+        inputDet.maxLength = "60";
+
+        let inputCant = document.createElement("input");
+        inputCant.type = "number";
+        inputCant.className = "form-control campoEditable";
+        inputCant.onchange = cambiaValor;
+        inputCant.min = "1";
+        inputCant.max = "100";
+
+        let inputTipo = document.createElement("select");
+        inputTipo.className = "form-control campoEditable";
+        let array = [{desc: "Producto", value: "producto"}, {desc: "Servicio", value: "servicio"}];
+        tipo.appendChild(inputTipo);
+
+        for (let i = 0; i < array.length; i++) {
+            let option = document.createElement("option");
+            option.value = array[i].value;
+            option.text = array[i].desc;
+            inputTipo.appendChild(option);
+        }
+
+        let inputId = document.createElement("input");
+        inputId.type = "hidden";
+        inputId.value = "-1";
+
+        let inputPrecio = document.createElement("input");
+        inputPrecio.type = "number";
+        inputPrecio.className = "form-control campoEditable";
+        inputPrecio.onchange = cambiaValor;
+        inputPrecio.max = "999999";
+        inputPrecio.min = "0.01";
+        inputPrecio.step = "0.01";
+
+        let buttonRemove = document.createElement("button");
+        buttonRemove.type = "button";
+        buttonRemove.className = "btn btn-danger campoEditable";
+        buttonRemove.onclick = () => removeRow(numeroRow);
+        buttonRemove.innerHTML = "-";
+
+        descripcion.appendChild(inputDesc);
+        detalle.appendChild(inputDet);
+        cantidad.appendChild(inputCant);
+        id.appendChild(inputId);
+        precio.appendChild(inputPrecio);
+        agregar.appendChild(buttonRemove);
+
+        cantidadFilasItems++;
+    }
+
+    function CountRows() {
+        let rowCount = 0;
+        let table = document.getElementById("itemsTable");
+        let rows = table.getElementsByTagName("tr")
+        for (let i = 0; i < rows.length; i++) {
+            if (rows[i].getElementsByTagName("td").length > 0) {
+                rowCount++;
+            }
+        }
+        return rowCount;
+    }
+
+    function buildCantidadItems(form) {
+        const existiaAlguienAntes = document.getElementById("id-cantidad-items");
+        if (!!existiaAlguienAntes) {
+            existiaAlguienAntes.value = String(CountRows());
+            return;
+        }
+
+        const hiddenField = document.createElement('input');
+        hiddenField.setAttribute("id", "id-cantidad-items");
+
+        hiddenField.type = 'hidden';
+        hiddenField.name = '{{query_param_cantidad_total_items}}';
+        hiddenField.value = String(CountRows());
+
+        form.append(hiddenField);
+    }
+
+    function buildRowsForBack() {
+        const table = document.getElementById("itemsTable");
+        let rows = table.getElementsByTagName("tr")
+        for (let i = 1; i < rows.length; i++) {
+            let data = rows[i].getElementsByTagName("td");
+            data[0].getElementsByTagName("input")[0].name = '{{query_param_item_descripcion}}' + i;
+            data[1].getElementsByTagName("input")[0].name = '{{query_param_item_detalle}}' + i;
+            data[2].getElementsByTagName("input")[0].name = '{{query_param_item_cantidad}}' + i;
+            data[3].getElementsByTagName("select")[0].name = '{{query_param_item_tipo}}' + i;
+            data[4].getElementsByTagName("input")[0].name = '{{query_param_item_precio}}' + i;
+            data[6].getElementsByTagName("input")[0].name = '{{query_param_item_id}}' + i;
+        }
+
+    }
+
+    function buildFileForBack() {
+        if (document.getElementById('divArchivo').style.display === 'none') {
+            document.getElementById('documentoComercial').value = null;
+        } else {
+            document.getElementById('enlaceDocumentoId').value = null;
+        }
+    }
+
+    function submit_form(event, form) {
+        event.preventDefault();
+
+        generic_manejar_error();
+
+        if (!{{editable}}) {
+            form[0].action = '{{elegir_presupuesto}}/{{operacion.id}}';
+        } else {
+            buildCantidadItems(form);
+            buildRowsForBack();
+            buildFileForBack();
+        }
+
+        $.ajax({
+            type: form[0].method,
+            url: form[0].action,
+            data: form.serialize(),
+            success: (data) => {
+                const respuesta = JSON.parse(data);
+                if (!!respuesta.errorInForm) {
+                    manejo_error_json(respuesta, () => {}, generic_manejar_error());
+                    return;
+                }
+
+                uploadDocumentacion("{{archivador_subida}}", respuesta.idRetorno, "documentoComercial");
+            }
+        });
+    }
+
+    iniciar_manejador_errores("formEgreso", submit_form);
+
+    function cambiaValor() {
+        let table = document.getElementById("itemsTable");
+        let rows = table.getElementsByTagName("tr");
+        let total = 0;
+        for (let i = 1; i < rows.length; i++) {
+            let data = rows[i].getElementsByTagName("td");
+            const cantidad = data[2].getElementsByTagName("input")[0].value;
+            const precio = data[4].getElementsByTagName("input")[0].value;
+            total += (cantidad * precio);
+        }
+
+        const inputTotal = document.getElementById("inputValorTotal");
+        inputTotal.value = total;
+    }
+
+    function removeRow(id) {
+        document.getElementById("row-" + id).remove();
+        cambiaValor();
+    }
+
+    function noPermitirEditar() {
+        if ("{{editable}}" === "false") {
+            const listaCampos = document.getElementsByClassName("campoEditable");
+            for (let i = 0; i < listaCampos.length; i++) {
+                listaCampos[i].disabled = true;
+            }
+        }
+    }
+
+    function downloadImage() {
+        let body = document.getElementById("body");
+        let form = document.createElement("form");
+        body.append(form);
+        form.method = 'POST';
+        form.action = '{{descargar_archivo}}/{{operacion.id}}';
+
+        form.submit();
+    }
+
+    function updateImage() {
+        let div = document.getElementById("showImage");
+        if (div != null) {
+            div.style.display = 'none';
+        }
+        let divPDF = document.getElementById("pdfFile");
+        if(divPDF != null) {
+            divPDF.style.display = 'none';
+        }
+    }
+
+    function changeDocumentoGroup(idDivMostrar, idDivNoMostrar) {
+        document.getElementById(idDivMostrar).style.display = 'block';
+        document.getElementById(idDivNoMostrar).style.display = 'none';
+    }
+
+
+    function cargarPDF() {
+        let divPDF = document.getElementById("pdfFile");
+        var obj = document.createElement('object');
+        obj.style.width = '460px';
+        obj.style.height = '300px';
+        obj.type = 'application/pdf';
+        obj.data = 'data:application/pdf;base64,' + '{{{pdf}}}';
+        divPDF.appendChild(obj);
+    }
+
+    {{ selectorSimpleHelper "proveedor" proveedorSeleccionado.id}}
+
+    {{ selectorSimpleHelper "moneda" monedaSeleccionado.id}}
+
+    {{ selectorSimpleHelper "criteriosSeleccion" criterioSeleccionSeleccionado}}
+
+    {{#if operacion.id }}
+        {{ selectorSimpleHelper "presupuestoSelect" presupuestoSeleccionado.id }}
+    {{/if}}
+</script>
+</html>

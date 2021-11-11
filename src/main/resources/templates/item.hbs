@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es" dir="ltr">
+<head>
+    {{ head "Item" }}
+</head>
+<body>
+{{ navbar null }}
+
+<div class="container-fluid">
+    <h1 class="display-3">{{#if item}}Editar Item{{else}}Crear Item{{/if}}</h1>
+    <div class="row-fluid">
+        <form method="post" {{#if item}} action="{{item_route}}/{{item.id}}" {{else}} action="{{item_route_crear}}"{{/if}}>
+            <div class="form-group">
+                <label for="inputDescripcion">Detalle</label>
+                <input name="{{query_param_detalle}}" value="{{item.detalle}}" type="text" class="form-control" id="inputDescripcion"/>
+            </div>
+
+            <div class="form-group">
+                <label for="inputDescripcion">Descripción</label>
+                <input name="{{query_param_descripcion}}" value="{{item.descripcion}}" type="text" class="form-control" id="inputDescripcion"/>
+            </div>
+
+            <div class="form-group">
+                <label for="item">Tipo de item:</label>
+                <select class="form-control" id="tipoDeItem" name="{{query_param_tipo}}">
+                        <option name="tipoDeItemOption" value="producto">Producto</option>
+                        <option name="tipoDeItemOption" value="servicio">Servicio</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary">{{#if item}}Actualizar Item{{else}}Guardar Item{{/if}}</button>
+        </form>
+    </div>
+</div>
+</body>
+
+{{ generalLibs null }}
+
+</html>

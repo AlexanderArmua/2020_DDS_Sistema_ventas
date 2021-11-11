@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es" dir="ltr">
+<head>
+    {{ head "Vinculador" }}
+</head>
+<body>
+
+{{ navbar null usuario }}
+
+
+ <div class="container-fluid">
+    <h1 class="display-3">Vinculador</h1>
+    <p class="lead">
+        Vinculación entre operaciones.
+    </p>
+
+    <div class="shadow p-1 mb-5 bg-white rounded">
+
+        <div class="row"  style=" margin-left: 10px;  margin-right: 10px;  margin-top: 10px;   margin-bottom: 10px;">
+            <div class="col">
+
+                <label>Criterio:</label>
+                <select class="form-control" id="criterioSelect">
+                    {{#each criterios}}
+                    <option name="criterioOption" value="{{id}}">{{description}}</option>
+                    {{/each}}
+                </select>
+            </div>
+        </div>
+
+        <div class="row"  style=" margin-left: 10px;  margin-right: 10px;  margin-top: 10px;   margin-bottom: 10px;">
+            <div class="col">
+                <h3 style="text-align:center">Egresos</h3>
+
+                <ul class="list-group">
+                    {{#each egresos}}
+                    <li class="list-group-item">
+                        <input name="checkboxEgresos" type="checkbox" value="{{id}}">
+                        <label>{{descripcion}} - Total: {{valorTotal}}</label>
+                    </li>
+                    {{/each}}
+                </ul>
+            </div>
+            <div class="col">
+                <h3 style="text-align:center">Ingresos</h3>
+
+                <ul class="list-group">
+                    {{#each ingresos}}
+                    <li class="list-group-item">
+                        <input name="checkboxIngresos" type="checkbox" value="{{id}}">
+                        <label>{{descripcion}} - Total: {{valorTotal}}</label>
+                    </li>
+                    {{/each}}
+                </ul>
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+    <button class="btn btn-primary" onclick="post('/vinculador/vincular')" style="margin-top: 10px;margin-left: 20px;">Vincular</button>
+</div>
+
+{{ footer null }}
+
+</body>
+
+{{ generalLibs null }}
+
+<script>
+    function post(path, method='post') {
+
+        const form = document.createElement('form');
+        form.method = method;
+        form.action = path;
+
+        var egresosSeleccionados = [];
+        const listaEgresos = document.getElementsByName("checkboxEgresos");
+        for(var i = 0; i < listaEgresos.length; i++) {
+            if(listaEgresos[i].checked) {
+                egresosSeleccionados.push(listaEgresos[i].value);
+            }
+        }
+
+        var ingresosSeleccionados = [];
+        const listaIngresos = document.getElementsByName("checkboxIngresos");
+        for(var j = 0; j < listaIngresos.length; j++) {
+            if(listaIngresos[j].checked) {
+                ingresosSeleccionados.push(listaIngresos[j].value);
+            }
+        }
+
+        const criterioSeleccionado = document.getElementById("criterioSelect").value;
+
+        const hiddenField = document.createElement('input');
+        hiddenField.type = 'hidden';
+        hiddenField.name = '{{query_param_ingresos_seleccionados}}';
+        hiddenField.value = ingresosSeleccionados;
+
+        const hiddenField2 = document.createElement('input');
+        hiddenField2.type = 'hidden';
+        hiddenField2.name = '{{query_param_egresos_seleccionados}}';
+        hiddenField2.value = egresosSeleccionados;
+
+        const hiddenField3 = document.createElement('input');
+        hiddenField3.type = 'hidden';
+        hiddenField3.name = '{{query_param_criterio}}';
+        hiddenField3.value = criterioSeleccionado;
+
+        form.appendChild(hiddenField3);
+        form.appendChild(hiddenField2);
+        form.appendChild(hiddenField);
+
+
+        document.body.appendChild(form);
+        form.submit();
+    }
+</script>
+
+</html>

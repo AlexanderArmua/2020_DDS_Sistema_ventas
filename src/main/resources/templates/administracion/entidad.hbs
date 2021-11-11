@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="es" dir="ltr">
+<head>
+    {{ head "Entidad" }}
+</head>
+<body>
+{{ navbar null usuario }}
+
+<div class="container-fluid">
+    <h1 class="display-3">{{#if entidad}}
+        Editar Entidad {{#if es_entidad_juridica}}Jurídica{{else}}Base{{/if}}{{else}}Crear Entidad{{/if}}</h1>
+
+
+        <!--div class="row-fluid">
+            <div class="btn-group btn-group-toggle" data-toggle="buttons">
+
+                <label class="btn btn-primary active">
+                    <input type="radio" name="options" id="option1" onclick="convertir('base')" checked/>Entidad Base
+                </label>
+
+
+                <label class="btn btn-primary">
+                    <input type="radio" name="options" id="option2" onclick="convertir('juridica')"/>Entidad Jurídica
+                </label>
+            </div>
+
+        </div-->
+
+
+    <div class="row-fluid">
+        <form method="post"
+            {{#if entidad}}
+              action="{{entidades_route}}/{{entidad.id}}"
+            {{else}}
+              action="{{entidades_route}}"
+            {{/if}}>
+            <div class="form-group">
+                <label for="inputNombreEntidad">Entidad</label>
+                <input type="text" class="form-control" id="inputNombreUsuario" aria-describedby="entidadHelp"
+                       name="{{query_param_nombre_entidad}}" value="{{entidad.nombre}}" required/>
+                <small id="entidadHelp" class="form-text text-muted">Nombre de la entidad en el sistema</small>
+            </div>
+
+            {{#if esBase}}
+            <span id="edicion_campos_base">
+                <div class="form-group">
+                    <label for="inputDescripcionEntidad">Descripción</label>
+                    <textarea type="text" class="form-control" id="inputDescripcionEntidad" rows="3"
+                           name="{{query_param_descripcion_entidad}}" value="{{entidad.descripcion}}" required/>
+                     </textarea>
+                </div>
+
+                <!--div class="form-group">
+                    <label for="selectRoles">Entidad Jurídica</label>
+                    <select class="form-control" id="selectEntidades" name="{{query_param_entidad_juridica}}">
+                        <option value="{{id}}">{{nombre}}</option>
+                    </select>
+                </div-->
+            </span>
+            <input type="hidden" id="modo" name="{{query_param_modo_modificacion}}" value="base"/>
+            {{/if}}
+
+            {{#if esJuridica}}
+            <span id="edicion_campos_juridica">
+                <div class="form-group">
+                    <label for="inputCodigoIGJ">Código IGJ</label>
+                    <input type="text" class="form-control" name="{{query_param_codigo_igj}}"
+                           value="{{entidad.codigoIGJ}}" {{#if es_entidad_juridica}}required{{/if}}/>
+                </div>
+
+                <div class="form-group">
+                    <label for="inputCuit">CUIT </label>
+                    <input type="text" data-mask="99-99.999.999-9" class="form-control" name="{{query_param_cuit}}"
+                           value="{{entidad.cuit}}" {{#if es_entidad_juridica}}required{{/if}}/>
+                </div>
+
+                <div class="form-group">
+                    <label for="inputCodigoIGJ">Razón Social</label>
+                    <textarea class="form-control" name="{{query_param_razon_social}}" rows="3"
+                              {{#if es_entidad_juridica}}required{{/if}}>{{entidad.razonSocial}}</textarea>
+                </div>
+
+                <div class="row">
+                    <div class="col form-group">
+                        <label for="selectRoles">Tipo Entidad Jurídica</label>
+                        <select class="form-control" id="selectTipoEntidad" name="{{query_param_tipo_entidad_juridica}}"
+                                value="{{entidad.tipoEntidadJuridica.tipo}}"
+                                {{#unless es_creacion}}disabled{{/unless}} onchange="cambiarEntidadJuridica()">
+                            <option value="">Nínguna</option>
+                            <option value="empresa">Empresa</option>
+                            <option value="osc">OSC</option>
+                        </select>
+                        {{#unless es_creacion}}
+                            <input type="hidden" name="{{query_param_tipo_entidad_juridica}}" value="{{entidad.tipoEntidadJuridica.tipo}}" />
+                        {{/unless}}
+                    </div>
+
+                    <div class="col form-group">
+                         <label for="inputCantidadPersonal">Personal</label>
+                         <input type="number" name="{{query_param_cantidad_personal}}" class="form-control"
+                                id="inputCantidadPersonal" value="{{entidad.tipoEntidadJuridica.cantidadPersonal}}"
+                                placeholder="Cantidad de Personal" min="0" step="1"
+                         />
+                    </div>
+
+                    <div class="col form-group">
+                        <label for="inputPromedioVentas">Ventas</label>
+                        <input
+                                type="text" name="{{query_param_promedio_ventas}}" class="form-control"
+                                id="inputPromedioVentas" value="{{entidad.tipoEntidadJuridica.promedioAnualVentas}}"
+                                placeholder="Promedio Anual de Ventas"
+                        />
+                    </div>
+                    
+                    <div class="col form-group">
+                        <label for="selectSector">Sector</label>
+                        <select name="{{query_param_select_sector}}" id="selectSector"
+                                value="{{entidad.tipoEntidadJuridica.actividad.sector.id}}"
+                                class="custom-select d-block w-100" onchange="changeSector()" required>
+                        </select>
+                    </div>
+
+                    <div class="col form-group">
+                        <label for="selectSector">Sector</label>
+                        <select name="{{query_param_select_actividad}}" id="selectActividad"
+                                value="{{entidad.tipoEntidadJuridica.actividad.id}}"
+                                class="custom-select d-block w-100" required>
+                        </select>
+                    </div>
+                </div>
+
+                <h4>Dirección</h4>
+                <div class="row">
+                    <div class="col form-group">
+                        <label for="inputCalle">Calle</label>
+                        <input name="{{query_param_input_calle}}" value="{{entidad.direccionPostal.calle}}" type="text"
+                               class="form-control" id="inputCalle" placeholder="Nombre calle"/>
+                        <div class="invalid-feedback">
+                            Ingrese Calle, por favor.
+                        </div>
+                   </div>
+
+                    <div class="col form-group">
+                         <label for="inputAltura">Altura</label>
+                         <input name="{{query_param_input_altura}}" value="{{entidad.direccionPostal.altura}}"
+                                type="number" class="form-control" id="inputAltura" placeholder="Nro Altura"
+                         />
+                    </div>
+
+                    <div class="col form-group">
+                         <label for="codigoPostal">Codigo Postal</label>
+                         <input name="{{query_param_input_codigo_postal}}"
+                                value="{{entidad.direccionPostal.codigoPostal}}" type="number" class="form-control"
+                                id="codigoPostal" placeholder="Nro Codigo Postal"/>
+                   </div>
+                </div>
+                <div class="row">
+                        <div class="col form-group">
+                            <label for="inputPiso">Piso</label>
+                            <input name="{{query_param_input_piso}}" value="{{entidad.direccionPostal.piso}}"
+                                   type="number"
+                                   class="form-control" id="inputPiso" placeholder="Nro piso"/>
+                        </div>
+
+                        <div class="col form-group">
+                            <label for="departamento">Departamento</label>
+                            <input name="{{query_param_input_departamento}}"
+                                   value="{{entidad.direccionPostal.departamento}}" type="text" class="form-control"
+                                   id="departamento" placeholder="Nro Depto"/>
+                        </div>
+                   </div>
+                <div class="row">
+                    <div class="col form-group">
+                        <label for="inputPais">Pais</label>
+                        <select name="{{query_param_select_pais}}" value="{{entidad.direccionPostal.pais.id}}"
+                                class="custom-select d-block w-100" onchange="changePais()" id="selectPaises" required>
+                        </select>
+                    </div>
+
+                    <div class="col form-group">
+                        <label for="inputProvincia">Provincia</label>
+                        <select name="{{query_param_select_provincia}}" value="{{entidad.direccionPostal.provincia.id}}"
+                                class="custom-select d-block w-100" onchange="changeProvincia()" id="selectProvincia"
+                                required>
+                        </select>
+                    </div>
+
+                    <div class="col form-group">
+                        <label for="inputCiudad">Ciudad</label>
+                        <select name="{{query_param_select_ciudad}}" value="{{entidad.direccionPostal.ciudad.id}}"
+                                class="custom-select d-block w-100" id="selectCiudades" required>
+                        </select>
+                    </div>
+                </div>
+            </span>
+            <input type="hidden" id="modo" name="{{query_param_modo_modificacion}}" value="juridica"/>
+            {{/if}}
+            <button type="submit" class="btn btn-primary">
+                {{#if entidad}}
+                    Actualizar Entidad
+                {{else}}
+                    Guardar Entidad
+                {{/if}}
+            </button>
+
+            <!--input type="hidden" id="modo" name="{{query_param_modo_modificacion}}" value="base"/-->
+        </form>
+    </div>
+</div>
+
+{{ footer null }}
+
+</body>
+
+{{ generalLibs null }}
+
+<!--Control de direcciones-->
+{{ controlDireccionHelper "selectPaises" "selectProvincia" "selectCiudades" }}
+
+<!--Si NO es entidad juridica es base, por lo tanto queremos que se setee el input de entidades-->
+{{#unless es_entidad_juridica}}
+    <script type="text/javascript">
+            {{ selectorSimpleHelper "selectEntidades" entidad.entidadJuridica.id }}
+    </script>
+{{/unless}}
+
+<!--Script para gestionar el modo de edición actual. Si es modo Edicion Entidad Juridica o Base-->
+<!--script type="text/javascript">
+    let modo = "base";
+
+    convertir = (nuevoModo) => {
+        if (nuevoModo !== modo) {
+            modo = nuevoModo;
+
+            $("#modo").val(modo);
+
+            $("#edicion_campos_base").toggle();
+            $("#edicion_campos_juridica").toggle();
+        }
+    }
+
+    $(document).ready(() => {
+        if ({{es_creacion}}) {
+            convertir("base");
+            return;
+        }
+        convertir(Boolean({{es_entidad_juridica}}) ? "juridica" : "base");
+    })
+</script-->
+
+<!--Deshabilita los selects si no es empresa-->
+<script type="text/javascript">
+    cambiarEntidadJuridica = () => {
+        const entidadJuridica = $("#selectTipoEntidad").val();
+        const esEmpresa = entidadJuridica === "empresa";
+
+        const inputPersonal = $("#inputCantidadPersonal");
+        const inputVentas = $("#inputPromedioVentas");
+        const selectSector = $("#selectSector");
+        const selectActividad = $("#selectActividad");
+
+        inputPersonal.prop('disabled', !esEmpresa);
+        inputVentas.prop('disabled', !esEmpresa);
+        selectSector.prop('disabled', !esEmpresa);
+        selectActividad.prop('disabled', !esEmpresa);
+
+        if (!esEmpresa) {
+            inputPersonal.val(null);
+            inputVentas.val(null);
+            selectSector.val(null);
+            selectActividad.val(null);
+        }
+    }
+</script>
+
+<!--Selector Simple Tipo Entidad si es Juridica-->
+{{#if es_entidad_juridica}}
+    <script type="text/javascript">
+            {{ selectorSimpleHelper "selectTipoEntidad" entidad.tipoEntidadJuridica.tipo }}
+    </script>
+{{/if}}
+
+<!--Sector y Actividad auto-fill-->
+<script type="text/javascript">
+    const selectSector = $("#selectSector");
+    const selectActividad = $("#selectActividad");
+
+    const RUTA_SECTORES = "/sectores";
+    const RUTA_ACTIVIDADES = "/actividades/";
+
+    obtenerID = (select) => parseInt(select.val() !== null ? select.val() : select.attr("value"), 10);
+
+    llenarSelect = (campo, idComparar, selectToAppend) => {
+        const option = $(`<option value=\"${campo.id}\">${campo.nombre || campo.descripcion}</option>`);
+        if (campo.id === idComparar) {
+            option.prop('selected', true);
+        }
+        option.appendTo(selectToAppend);
+    }
+
+    obtenerSectores = () => {
+        const idSector = obtenerID(selectSector);
+        fetch(RUTA_SECTORES)
+                .then(response => response.json())
+                .then(result => {
+                    result.forEach((sector) => llenarSelect(sector, idSector, selectSector));
+                    changeSector();
+                });
+    }
+
+    changeSector = () => {
+        const idSector = obtenerID(selectSector);
+        const idActividad = obtenerID(selectActividad);
+        selectActividad.empty();
+
+        fetch(RUTA_ACTIVIDADES + idSector)
+                .then(response => response.json())
+                .then(result => {
+                    if (result.length === 0) {
+                        selectActividad.empty();
+                        return;
+                    }
+                    result.forEach((actividad) => llenarSelect(actividad, idActividad, selectActividad));
+                });
+    }
+
+    obtenerSectores();
+</script>
+
+</html>

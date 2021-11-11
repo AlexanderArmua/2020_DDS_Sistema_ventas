@@ -1,0 +1,35 @@
+package Domain.Entities.Usuarios;
+
+public enum PermisoUsuario {
+    ABM_USUARIOS(1),
+    VISUALIZAR_USUARIOS(2),
+    ABM_OPERACION_EGRESO(3),
+    VISUALIZAR_OPERACION_EGRESO(4),
+    ABM_ENTIDAD_JURIDICA(5),
+    VISUALIZAR_ENTIDAD_JURIDICA(6),
+    ABM_ENTIDAD_BASE(7),
+    VISUALIZAR_ENTIDAD_BASE(8),
+    ABM_PRESUPUESTO(9),
+    VISUALIZAR_PRESUPUESTO(10),
+    EJECUTAR_VALIDADOR_TRANSPARENCIA(11),
+    ABM_OPERACION_INGRESO(12),
+    VISUALIZAR_OPERACION_INGRESO(13),
+    ABM_CATYCRI(14),
+    VISUALIZAR_CATYCRI(15),
+    EJECUTAR_VINCULADOR(16),
+    CONFIGURACION_CRITERIO_VINCULADOR(17),
+    SUPER_USUARIO(18),
+    ABM_PROVEEDOR(19),
+    VISUALIZAR_PROVEEDOR(20);
+
+
+    private final int idPermiso;
+    PermisoUsuario(int idPermiso) {
+        this.idPermiso = idPermiso;
+    }
+
+    public int getIdPermiso() {
+        return idPermiso;
+    }
+
+}

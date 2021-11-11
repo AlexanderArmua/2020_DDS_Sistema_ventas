@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="es" dir="ltr">
+<head>
+    {{ head "Presupuesto" }}
+</head>
+<body>
+{{ navbar null usuario }}
+
+<div class="container-fluid">
+    <h1 class="display-3">{{#if presupuesto}}Editar Presupuesto{{else}}Crear Presupuesto{{/if}}</h1>
+    <div class="row-fluid" id="body">
+        <form id="presupuestoForm" method="post" action="{{#if presupuesto}}{{presupuestos_route}}/{{presupuesto.id}}{{else}}{{presupuestos_route}}{{/if}}">
+
+            <div class="row">
+                <div class="col">
+                    <div class="form-group">
+                         <label for="inputDescPresupuesto">Descripcion</label>
+                         <input type="text" class="form-control campoEditable" id="inputDescPresupuesto" aria-describedby="descripcionHelp" name="{{query_param_descPresupuesto}}" {{#if presupuesto.id}} value="{{presupuesto.descripcion}}" {{/if}} required/>
+                    </div>
+                </div>
+
+                <div class="col">
+                        <div class="form-group">
+                            <label for="selectProveedor">Proveedor</label>
+                            <select class="form-control" id="selectProveedor" name="{{query_param_proveedor}}">
+                                <option value="0">Seleccione proveedor</option>
+                                {{#each proveedores}}
+                                <option value="{{id}}">{{#if nombre }} {{nombre}} {{apellido}} {{else}} {{razonSocial}}  {{/if}}</option>
+                                {{/each}}
+                            </select>
+                        </div>
+                </div>
+            </div>
+
+
+            <div class="row">
+                <div class="col">
+                        <div class="form-group">
+                            <label for="selectOperacionEgreso">Operacion Egreso</label>
+                            <select class="form-control" id="selectOperacionEgreso" name="{{query_param_egreso}}" onchange="cambiarOperacion()">
+                                <option value="0">Ninguna</option>
+                                {{#each egresos}}
+                                    <option value="{{id}}">{{descripcion}}</option>
+                                {{/each}}
+                            </select>
+                        </div>
+                </div>
+
+                <div class="col">
+                        <div class="form-group">
+                            <label for="selectCategorias">Categorías:</label> <br>
+                            <select multiple class="form-control" id="selectCategorias" disabled>
+                            </select>
+                        </div>
+                </div>
+            </div>
+
+
+            <div class="row">
+                <div class="col">
+                            <div class="form-group">
+                                <label>Items</label>
+                                <table id="itemsTable">
+                                    <tr>
+                                        <th>Descripción</th>
+                                        <th>Detalle</th>
+                                        <th>Cantidad</th>
+                                        <th>Tipo</th>
+                                        <th>Precio Unitario</th>
+                                        <th></th>
+                                    </tr>
+                                </table>
+                            </div>
+                </div>
+            </div>
+
+
+
+            <div class="row">
+                <div class="col">
+                            <div class="form-group">
+                                <label for="inputValorTotal">Valor Total</label>
+                                <input name="{{query_param_valor_total}}" disabled type="number"  step=0.01 class="form-control" id="inputValorTotal" aria-describedby="valorTotalHelp"/>
+                            </div>
+                </div>
+            </div>
+
+            <div class="row">
+
+                <div class="col">
+
+                        <label for="documentoComercialGroup">Documento Comercial:</label>
+                        <div class="btn-group" role="group" id="documentoComercialGroup">
+                            <button type="button" class="btn btn-secondary" onclick="changeDocumentoGroup('divEnlace', 'divArchivo')">Enlace</button>
+                            <button type="button" class="btn btn-secondary" onclick="changeDocumentoGroup('divArchivo', 'divEnlace')">Archivo</button>
+                        </div>
+
+                </div>
+
+                <div class="col">
+                        <label for="numeroDocumentoComercialId">Número de Documento Comercial:</label>
+                        <input type="number" min="1" max="99999999999" id="numeroDocumentoComercialId" name="{{query_param_numero_documento}}" value="{{presupuesto.documentoComercial.numero}}">
+
+                </div>
+            </div>
+
+            <div class="row" style="margin-top: 10px">
+                <div class="col">
+                        <div id="divEnlace">
+                            <label for="enlaceDocumentoId">Enlace Documento Comercial:</label>
+                            <input type="text" id="enlaceDocumentoId" maxlength="30" name="{{query_param_enlace_documento}}" value="{{presupuesto.documentoComercial.enlaceExterno}}">
+                        </div>
+                </div>
+
+                <div class="col">
+                            <div id="divArchivo">
+                                <input id="documentoComercial" type="file" name="{{query_param_documento_comercial}}" onchange="updateImage()">
+                                {{#if imagen}}
+                                <div id="showImage">
+                                    <img src="{{imagen}}" width="300" height="500">
+                                    <a onclick="downloadImage()">Descargar</a>
+                                </div>
+                                {{/if}}
+                                {{#if pdf}}
+                                <div id="pdfFile"></div>
+                                {{/if}}
+
+                            </div>
+                 </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="margin-top: 20px">{{#if presupuesto}}Actualizar Presupuesto{{else}}Guardar Presupuesto{{/if}}</button>
+
+        </form>
+    </div>
+</div>
+
+{{ footer null }}
+
+</body>
+
+{{ generalLibs null }}
+
+<script>
+    const operacionesEgreso = {{{operaciones}}};
+    const presupuestoSeleccionado = {{{presupuestoJSON}}};
+
+    {{ selectorSimpleHelper "selectProveedor" proveedorSeleccionado.id}}
+
+    {{ selectorSimpleHelper "selectOperacionEgreso" egresoSeleccionado.id}}
+
+    $(document).ready(() => {
+        cambiarOperacion();
+        cambiaValor();
+        if('{{tipoArchivo}}' === 'archivo_adjunto') {
+            changeDocumentoGroup('divArchivo', 'divEnlace');
+        } else {
+            changeDocumentoGroup('divEnlace', 'divArchivo');
+        }
+        if('{{pdf}}' != '') {
+            cargarPDF();
+        }
+    });
+
+    function cambiaValor() {
+        var table = document.getElementById("itemsTable");
+        var rows = table.getElementsByTagName("tr");
+        var total = 0;
+        for (var i = 1; i < rows.length; i++) {
+            var data = rows[i].getElementsByTagName("td");
+            const cantidad = data[2].getElementsByTagName("p")[0].innerHTML;
+            const precio = data[4].getElementsByTagName("input")[0].value;
+            total += (+cantidad * precio);
+        }
+
+        const inputTotal = document.getElementById("inputValorTotal");
+        inputTotal.value = total;
+    };
+
+    function buildTabla() {
+        const table = document.getElementById("itemsTable");
+        const rows = table.getElementsByTagName("tr")
+        for (let i = 1; i < rows.length; i++) {
+            const data = rows[i].getElementsByTagName("td");
+            data[4].getElementsByTagName("input")[0].name = '{{query_param_item_precio}}' + i;
+            data[5].getElementsByTagName("input")[0].name = '{{query_param_item_id}}' + i;
+        }
+    }
+    function buildDocumentos() {
+        if(document.getElementById('divArchivo').style.display === 'none') {
+            document.getElementById('documentoComercial').value = null;
+        } else {
+            document.getElementById('enlaceDocumentoId').value = null;
+        }
+    }
+
+    function submit_form(event, form) {
+        event.preventDefault();
+
+        generic_manejar_error();
+
+        buildTabla();
+        buildDocumentos();
+
+        $.ajax({
+            type: form[0].method,
+            url: form[0].action,
+            data: form.serialize(),
+            success: (data) => {
+                const respuesta = JSON.parse(data);
+                if (!!respuesta.errorInForm) {
+                    manejo_error_json(respuesta, () => {}, generic_manejar_error());
+                    return;
+                }
+
+                uploadDocumentacion("{{archivador_subida}}", respuesta.idRetorno, "documentoComercial");
+            }
+        });
+
+    }
+
+    iniciar_manejador_errores("presupuestoForm", submit_form);
+
+    function cambiarOperacion() {
+        const table = document.getElementById("itemsTable");
+        const selectedId = document.getElementById("selectOperacionEgreso").value;
+        const operacionSeleccionada = operacionesEgreso.filter(o => o.id == selectedId)[0];
+        const selectCategoria = document.getElementById("selectCategorias");
+
+        while(table.rows.length > 1) {
+          table.deleteRow(1);
+        }
+
+        for(let k = selectCategoria.options.length - 1; k >= 0; k--) {
+          selectCategoria.remove(k);
+        }
+        if(operacionSeleccionada) {
+            for(var i = 0; i < operacionSeleccionada.items.length; i++) {
+                var row = table.insertRow(-1);
+                var descripcion = row.insertCell(0);
+                var detalle = row.insertCell(1);
+                var cantidad = row.insertCell(2);
+                var tipo = row.insertCell(3);
+                var precio = row.insertCell(4);
+                var agregar = row.insertCell(5);
+
+                var desc = document.createElement("p");
+                desc.style = "margin-bottom: 0;";
+                desc.innerHTML = operacionSeleccionada.items[i].descripcion;
+
+                var det = document.createElement("p");
+                det.style = "margin-bottom: 0;";
+                det.innerHTML = operacionSeleccionada.items[i].detalle;
+
+                var cant = document.createElement("p");
+                cant.style = "margin-bottom: 0;";
+                cant.innerHTML = operacionSeleccionada.items[i].cantidad;
+
+                var tip = document.createElement("p");
+                tip.style = "margin-bottom: 0;";
+                tip.innerHTML = operacionSeleccionada.items[i].tipoItem;
+
+                var inputPrecio = document.createElement("input");
+                inputPrecio.type = "number";
+                inputPrecio.className = "form-control";
+                inputPrecio.onchange = cambiaValor;
+                if(presupuestoSeleccionado.items.length > 0) {
+                    inputPrecio.value = presupuestoSeleccionado.items[i].precio;
+                }
+                var inputId = document.createElement("input");
+                inputId.type = "hidden";
+                inputId.value = operacionSeleccionada.items[i].id;
+
+                descripcion.appendChild(desc);
+                detalle.appendChild(det);
+                cantidad.appendChild(cant);
+                tipo.appendChild(tip);
+                precio.appendChild(inputPrecio);
+                agregar.appendChild(inputId);
+            }
+
+            cambiaValor();
+
+            for(var i = 0; i < operacionSeleccionada.categorias.length; i++) {
+                var option = document.createElement("option");
+                option.text = operacionSeleccionada.categorias[i].descripcion;
+                option.value = operacionSeleccionada.categorias[i].id;
+                selectCategoria.add(option);
+            }
+        }
+    };
+
+    function downloadImage() {
+        let body = document.getElementById("body");
+        let form = document.createElement("form");
+        body.append(form);
+        form.method = 'POST';
+        form.action = '{{descargar_archivo}}/{{presupuesto.id}}';
+
+        form.submit();
+    }
+
+    function updateImage() {
+        let div = document.getElementById("showImage");
+        if(div != null) {
+            div.style.display = 'none';
+        }
+        let divPDF = document.getElementById("pdfFile");
+        if(divPDF != null) {
+            divPDF.style.display = 'none';
+        }
+    }
+
+    function changeDocumentoGroup(idDivMostrar, idDivNoMostrar) {
+        document.getElementById(idDivMostrar).style.display = 'block';
+        document.getElementById(idDivNoMostrar).style.display = 'none';
+    }
+
+    function cargarPDF() {
+        let divPDF = document.getElementById("pdfFile");
+        var obj = document.createElement('object');
+        obj.style.width = '460px';
+        obj.style.height = '300px';
+        obj.type = 'application/pdf';
+        obj.data = 'data:application/pdf;base64,' + '{{{pdf}}}';
+        divPDF.appendChild(obj);
+    }
+
+</script>
+
+</html>

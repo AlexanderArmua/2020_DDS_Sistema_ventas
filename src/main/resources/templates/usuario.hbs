@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es" dir="ltr">
+<head>
+    {{ head "Usuario" }}
+</head>
+<body>
+{{ navbar null usuario }}
+
+<div class="container-fluid">
+    <h1 class="display-3">{{#if usuario}}Editar Usuario{{else}}Crear Usuario{{/if}}</h1>
+    <div class="row-fluid">
+        <form id="usuarioForm" action="{{#if usuario}}{{usuarios_route}}/{{usuario.id}}{{else}}{{usuarios_route}}{{/if}}" method="post">
+
+            <div class="form-group">
+                <label for="inputNombreUsuario">Usuario</label>
+                <input type="text" class="form-control" id="inputNombreUsuario" aria-describedby="usuarioHelp" name="{{query_param_usuario}}" value="{{usuario.usuario}}" required/>
+                <small id="usuarioHelp" class="form-text text-muted">Nombre del usuario en el sistema.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="selectRoles">Entidad</label>
+                <select class="form-control" id="selectEntidades" name="{{query_param_entidades}}" required>
+                    <option value="">Seleccione una entidad</option>
+                    {{#each entidades}}
+                        <option value="{{id}}">{{nombre}} {{#if razonSocial}}({{razonSocial}}){{/if}}</option>
+                    {{/each}}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="selectRoles">Roles</label>
+                <select multiple class="form-control" id="selectRoles" name="{{query_param_roles}}" required>
+                    {{#each roles}}
+                        <option value="{{rol.id}}" {{#if seleccionado}}selected{{/if}}>{{rol.nombre}}</option>
+                    {{/each}}
+                </select>
+            </div>
+
+            {{#unless usuario}}
+                <div class="form-group">
+                    <label for="inputPassword">Contraseña</label>
+                    <input type="password" class="form-control" id="inputPassword" name="{{query_param_contrasenna}}" value="{{usuario.contrasenna}}" required/>
+                </div>
+                <div class="form-group">
+                    <label for="inputPassword">Verifique contraseña</label>
+                    <input type="password" class="form-control" id="inputPassword2" name="{{query_param_contrasenna2}}" value="{{usuario.contrasenna}}" required/>
+                </div>
+            {{/unless}}
+
+            <input type="submit" class="btn btn-primary" value="{{#if usuario}}Actualizar Usuario{{else}}Guardar Usuario{{/if}}" />
+        </form>
+    </div>
+</div>
+
+{{ footer null }}
+
+</body>
+
+{{ generalLibs null }}
+
+<script type="text/javascript">
+    {{ selectorSimpleHelper "selectEntidades" entidadSeleccionada.id}}
+</script>
+
+<script type="text/javascript">
+    iniciar_manejador_errores("usuarioForm");
+</script>
+
+</html>

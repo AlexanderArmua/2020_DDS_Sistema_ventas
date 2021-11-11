@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es" dir="ltr">
+<head>
+    {{ head "Proveedor" }}
+</head>
+<body>
+{{ navbar null usuario }}
+
+<div class="container-fluid">
+    <h1 class="display-3">{{#if proveedor.id}}Editar Proveedor{{else}}Crear Proveedor{{/if}}</h1>
+    <div class="row-fluid">
+        <form method="post" {{#if proveedor.id}}
+              action="{{proveedores_route}}/{{proveedor.id}}" {{else}} action="{{proveedores_route_crear}}"{{/if}}>
+
+            <div class="row">
+                <div class="col">
+                    <label for="inputNombre">Nombre</label>
+                    <input name="{{query_param_nombre}}" value="{{proveedor.nombre}}" class="form-control"
+                           id="inputNombre" aria-describedby="nombreHelp"/>
+                </div>
+                <div class="col">
+                    <label for="inputApellido">Apellido</label>
+                    <input name="{{query_param_apellido}}" value="{{proveedor.apellido}}" class="form-control"
+                           id="inputApellido" aria-describedby="apellidoHelp"/>
+                </div>
+                <div class="col">
+                    <label for="inputDni">DNI</label>
+                    <input name="{{query_param_dni}}" value="{{proveedor.dni}}" type="number" class="form-control"
+                           id="inputDni" aria-describedby="dniHelp"/>
+                    <small id="cuitHelp" class="form-text text-muted">Ingresar únicamente números</small>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <label for="inputRazonSocial">Razón Social</label>
+                    <input name="{{query_param_razonSocial}}" value="{{proveedor.razonSocial}}" class="form-control"
+                           id="inputRazonSocial" aria-describedby="razonSocialHelp"/>
+                </div>
+
+                <div class="col">
+                    <label for="inputCuit">CUIT</label>
+                    <input name="{{query_param_cuit}}" value="{{proveedor.cuit}}" type="number" class="form-control"
+                           id="inputCuit" aria-describedby="cuitHelp"/>
+                    <small id="cuitHelp" class="form-text text-muted">Ingresar únicamente números</small>
+                </div>
+
+            </div>
+
+            <label for="inputDireccion" style="margin-bottom: 10px">Direccion</label>
+            <div class="row">
+                <div class="col">
+                    <label for="inputCalle">Calle</label>
+                    <input name="{{query_param_calle}}" value="{{proveedor.direccionPostal.calle}}" type="text"
+                           class="form-control" id="inputCalle" placeholder="Nombre calle" required>
+                    <div class="invalid-feedback">
+                        Ingrese Calle, por favor.
+                    </div>
+                </div>
+                <div class="col">
+                    <label for="inputAltura">Altura</label>
+                    <input name="{{query_param_altura}}" value="{{proveedor.direccionPostal.altura}}" type="number"
+                           class="form-control" id="inputAltura" placeholder="Nro Altura" required>
+                    <div class="invalid-feedback">
+                        Ingrese Altura, por favor.
+                    </div>
+                </div>
+                <div class="col">
+                    <label for="inputCodigo">Codigo Postal</label>
+                    <input name="{{query_param_codigo_postal}}" value="{{proveedor.direccionPostal.codigoPostal}}"
+                           type="number" class="form-control" id="inputCodigo" placeholder="Nro Codigo Postal" required>
+                    <div class="invalid-feedback">
+                        Ingrese Código Postal, por favor.
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <label for="inputPiso">Piso</label>
+                    <input name="{{query_param_piso}}" value="{{proveedor.direccionPostal.piso}}" type="number"
+                           class="form-control" id="inputPiso" placeholder="Nro piso">
+                </div>
+
+                <div class="col">
+                    <label for="inputPiso">Departamento</label>
+                    <input name="{{query_param_departamento}}" value="{{proveedor.direccionPostal.departamento}}"
+                           type="text" class="form-control" id="inputDepartamento" placeholder="Nro Depto">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <label for="inputPais">Pais</label>
+                    <select name="{{query_param_pais}}" value="{{proveedor.direccionPostal.pais.id}}"
+                            class="custom-select d-block w-100" id="pais" onchange="changePais()" required>
+                    </select>
+                </div>
+
+                <div class="col">
+                    <label for="inputProvincia">Provincia</label>
+                    <select name="{{query_param_provincia}}" value="{{proveedor.direccionPostal.provincia.id}}"
+                            class="custom-select d-block w-100" id="inputProvincia" onchange="changeProvincia()" required>
+                    </select>
+                </div>
+
+                <div class="col">
+                    <label for="inputCiudad">Ciudad</label>
+                    <select name="{{query_param_ciudad}}" value="{{proveedor.direccionPostal.ciudad.id}}"
+                            class="custom-select d-block w-100" id="inputCiudad" required>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary" style="margin-top: 10px">{{#if proveedor}}
+                    Guardar Proveedor{{else}}Actualizar Proveedor{{/if}}</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{{ footer null }}
+
+</body>
+
+{{ generalLibs null }}
+
+{{ controlDireccionHelper "pais" "inputProvincia" "inputCiudad" }}
+
+</html>

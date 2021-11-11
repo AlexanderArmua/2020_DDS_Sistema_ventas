@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es" dir="ltr">
+<head>
+    {{ head "Criterio" }}
+</head>
+<body>
+{{ navbar null usuario }}
+
+<div class="container-fluid">
+    <h1 class="display-3">{{#if criterio}}Editar Criterio{{else}}Crear Criterio{{/if}}</h1>
+    <div class="row-fluid">
+        <form method="post" {{#if criterio}} action="{{criterios_route}}/{{criterio.id}}" {{else}} action="{{criterios_route_crear}}"{{/if}}>
+            <div class="form-group">
+                <label for="inputDescripcion">Descripción</label>
+                <input name="{{query_param_descripcion}}" value="{{criterio.descripcion}}" type="text" class="form-control" id="inputDescripcion"/>
+            </div>
+
+            <div class="form-group">
+                <label for="selectCriterio">Criterio padre</label>
+                <select class="form-control" id="selectCriterio" name="{{query_param_criterio_padre}}">
+                    <option value="0">Ninguno</option>
+                    {{#each criterios}}
+                        <option name="criteriosPadreOption" value="{{id}}">{{descripcion}}</option>
+                    {{/each}}
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary">{{#if criterio}}Actualizar Criterio{{else}}Guardar Criterio{{/if}}</button>
+        </form>
+    </div>
+</div>
+
+{{ footer null }}
+
+</body>
+
+{{ generalLibs null }}
+
+<script>
+    window.addEventListener("load", function() {
+
+        var criterioSeleccionado = {{criterioSeleccionado.id}} ? {{criterioSeleccionado.id}} : null;
+        if(criterioSeleccionado) {
+            var options = document.getElementsByName("criteriosPadreOption");
+            for(var i = 0; i < options.length; i++) {
+                if(options[i].value == {{criterioSeleccionado.id}}){
+                    options[i].selected = true;
+                    continue;
+                }
+            }
+        }
+    })
+</script>
+
+</html>

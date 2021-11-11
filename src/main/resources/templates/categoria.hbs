@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es" dir="ltr">
+<head>
+    {{ head "Categoría" }}
+</head>
+<body>
+{{ navbar null usuario }}
+
+<div class="container-fluid">
+    <h1 class="display-3">{{#if categoria}}Editar Categoría{{else}}Crear Categoría{{/if}}</h1>
+    <div class="row-fluid">
+        <form method="post" {{#if categoria}} action="{{categorias_route}}/{{categoria.id}}" {{else}} action="{{categorias_route_crear}}"{{/if}}>
+            <div class="form-group">
+                <label for="inputDescripcion">Descripción</label>
+                <input name="{{query_param_descripcion}}" value="{{categoria.descripcion}}" type="text" class="form-control" id="inputDescripcion"/ required>
+            </div>
+
+            <div class="form-group">
+                <label for="selectCriterio">Criterio</label>
+                <select class="form-control" id="selectCriterio" name="{{query_param_criterio}}">
+                    <option value="0">Seleccione criterio</option>
+                    {{#each criterios}}
+                        <option value="{{id}}">{{descripcion}}</option>
+                    {{/each}}
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary">{{#if categoria}}Actualizar Categoría{{else}}Guardar Categoría{{/if}}</button>
+        </form>
+    </div>
+</div>
+
+{{ footer null }}
+
+</body>
+
+{{ generalLibs null }}
+
+<script>
+    {{ selectorSimpleHelper "selectCriterio" criterioSeleccionado.id}}
+</script>
+
+</html>

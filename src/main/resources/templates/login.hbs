@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es" dir="ltr">
+    <head>
+        {{ head "Login" }}
+        <style>
+            html, body { height: 100%; }
+            .background {
+                background: #571a89;
+                background: -moz-linear-gradient(45deg, #571a89 0%, #2c7d93 100%);
+                background: -webkit-linear-gradient(45deg, #571a89 0%,#2c7d93 100%);
+                background: linear-gradient(45deg, #571a89 0%,#2c7d93 100%);
+                filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#571a89', endColorstr='#2c7d93',GradientType=1 );
+            }
+            .alert-custom {
+                white-space: break-spaces;
+            }
+        </style>
+    </head>
+    <body class="background">
+        <div class="container h-100">
+            <div class="d-flex h-100">
+                <div class="m-auto">
+                    <form action="/login" method="post" id="myForm">
+                        {{#unless login_seguro}}
+                            <div class="alert alert-success" role="alert">
+                                Está deshabilitado el login seguro, ingresá cualquier usuario y contraseña
+                            </div>
+                        {{/unless}}
+                        <div class="form-group">
+                            <label for="username">Nombre de Usuario</label>
+                            <input type="text" class="form-control" id="username" name="{{query_param_usuario}}" aria-describedby="usuarioHelp" required autocomplete="on"/>
+                            <small id="usuarioHelp" class="form-text text-muted">No lo compartiremos con nadie (tal vez con Eze y Lalo).</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Contraseña</label>
+                            <input type="password" class="form-control" id="password" name="{{query_param_contrasenna}}" required autocomplete="on"/>
+                        </div>
+
+                        <div class="alert alert-warning alert-custom" role="alert" id="alerta_form" style="display: none;">
+                        </div>
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary btn-block" id="botonIngresar">Ingresar</button>
+                            <button class="btn btn-primary btn-block" type="button" id="botonCargando" disabled style="display: none;">
+                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                Cargando...
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </body>
+
+    {{ generalLibs null }}
+
+    <script>
+        // 2. Si le mandan un texto, mostrará un mensaje en amarillo
+        toggle_alerta = (mensajes) => {
+            const alerta = $("#alerta_form");
+            if (mensajes && mensajes.length > 0) {
+                const textoError = "- " + mensajes.join("\n- ");
+
+                alerta.text(textoError);
+                alerta.show();
+                return;
+            }
+            alerta.hide();
+        }
+
+        // 4. Una forma linda y barata de mostrar al usuario que pasa algo y no entre en pánico
+        toggle_cargando = () => {
+            $("#botonIngresar").toggle();
+            $("#botonCargando").toggle();
+        }
+
+        // 3. Hace el envio al backend y se encarga de redireccionar en caso de ser necesario
+        post_user_login = async () => {
+            toggle_cargando();
+
+            const nombre = $("#username").val();
+            const contrasenna = $("#password").val();
+
+            const response = await fetch(`/login`, {
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                method: 'POST',
+                body: JSON.stringify({
+                    usuario: nombre,
+                    contrasenna: contrasenna
+                })
+            });
+
+            await manejar_response(response, toggle_cargando, toggle_alerta);
+        }
+
+        // 1. Al iniciar registra un evento en el formulario para que no se ejecute el post del form, en su lugar esta función
+        load_control_login = (() => {
+            $(document).ready(() => {
+                $('#myForm').submit(function (e) {
+                    e.preventDefault();
+                    toggle_alerta();
+                    post_user_login();
+                });
+            });
+        })();
+    </script>
+
+</html>

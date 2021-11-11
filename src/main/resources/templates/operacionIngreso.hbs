@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es" dir="ltr">
+<head>
+    {{ head "Operación" }}
+</head>
+<body>
+{{ navbar null usuario }}
+
+<div class="container-fluid">
+    <h1 class="display-3">{{#if ingreso.id}}Editar Operación{{else}}Crear Operación{{/if}}</h1>
+    <div class="row-fluid">
+        <form id="formIngreso" method="post" {{#if ingreso.id}} action="{{operacion_view_ingreso}}/{{ingreso.id}}" {{else}} action="{{operacion_ingreso_crear}}" {{/if}}>
+
+
+            <div class="row">
+                <div class="col">
+                        <div class="form-group">
+                            <label for="inputDescripcion">Descripción</label>
+                            <input type="text" maxlength="70" class="form-control" id="inputDescripcion" name="{{query_param_descripcion}}" {{#if ingreso.id}} value="{{ingreso.descripcion}}" {{/if}} required/>
+                        </div>
+                </div>
+
+                <div class="col">
+                        <div class="form-group">
+                            <label for="inputFecha">Fecha Creación</label>
+                            <input type="datetime-local" step="1" class="form-control" id="inputFecha" aria-describedby="fechaHelp" name="{{query_param_fecha}}" {{#if ingreso.id}} value="{{ingreso.fecha}}" {{/if}} required/>
+                        </div>
+                </div>
+
+                <div class="col">
+                        <div class="form-group">
+                            <label for="inputFechaHasta">Fecha Hasta (Vinculación)</label>
+                            <input type="date" class="form-control" id="inputFechaHasta" name="{{query_param_fecha_hasta}}" {{#if ingreso.id}} value="{{ingreso.fechaHasta}}" {{/if}} required/>
+                        </div>
+                </div>
+            </div>
+
+
+            <div class="row">
+                <div class="col">
+                            <div class="form-group">
+                                <label for="inputValorTotal">Valor total</label>
+                                <input type="number" step=0.01 min="0.01" max="9999999" class="form-control" id="inputValorTotal" aria-describedby="valorTotalHelp" name="{{query_param_valor}}" value="{{ingreso.valorTotal}}" required/>
+                            </div>
+                </div>
+
+                <div class="col">
+                            <div class="form-group">
+                                <label for="moneda">Moneda:</label>
+                                <select class="form-control campoEditable" id="moneda" name="{{query_param_moneda}}" disabled>
+                                    {{#each moneda}}
+                                        <option value="{{id}}">{{descripcion}}</option>
+                                    {{/each}}
+                                </select>
+                            </div>
+                </div>
+
+            </div>
+
+        <button type="submit" class="btn btn-primary">{{#if ingreso.id}}Actualizar Operación{{else}}Guardar Operación{{/if}}</button>
+
+        </form>
+    </div>
+</div>
+
+{{ footer null }}
+
+</body>
+
+{{ generalLibs null }}
+
+<script>
+        {{ selectorSimpleHelper "moneda" monedaSeleccionado.id}}
+</script>
+
+<script>
+    window.addEventListener("load", function() {
+        var op = {{ingreso.id}} ? {{ingreso.id}} : null;
+        if(op == null){
+            var now = new Date();
+            var utcString = now.toISOString().substring(0,19);
+            var year = now.getFullYear();
+            var month = now.getMonth() + 1;
+            var day = now.getDate();
+            var hour = now.getHours();
+            var minute = now.getMinutes();
+            var localDatetime = year + "-" +
+                              (month < 10 ? "0" + month.toString() : month) + "-" +
+                              (day < 10 ? "0" + day.toString() : day) + "T" +
+                              (hour < 10 ? "0" + hour.toString() : hour) + ":" +
+                              (minute < 10 ? "0" + minute.toString() : minute) +
+                              utcString.substring(16,19);
+            var datetimeField = document.getElementById("inputFecha");
+            datetimeField.value = localDatetime;
+        }
+
+        iniciar_manejador_errores("formIngreso");
+    });
+
+</script>
+</html>
